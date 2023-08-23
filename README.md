@@ -88,6 +88,7 @@ RVC需要其他一些预模型来推理和训练。
 你可以从我们的[Hugging Face space](https://huggingface.co/lj1995/VoiceConversionWebUI/tree/main/)下载到这些模型。
 
 以下是一份清单，包括了所有RVC所需的预模型和其他文件的名称:
+> hubert_base.pt 已包含至代码仓库中 (date: 2023年8月23日 KyleCe)
 ```bash
 hubert_base.pt
 
