@@ -1431,6 +1431,14 @@ def export_onnx(ModelPath, ExportedPath):
     )
     return "Finished"
 
+# for mocking default selection for API reference
+sid0 = None
+spk_item = None
+protect0 = None
+protect1 = None
+file_index2 = None
+file_index4 = None
+
 
 with gr.Blocks(title="RVC WebUI") as app:
     gr.Markdown(
@@ -2173,3 +2181,7 @@ with gr.Blocks(title="RVC WebUI") as app:
             server_port=config.listen_port,
             quiet=True,
         )
+        
+        # for mocking default selection for API reference
+        sleep(2)
+        spk_item, protect0, protect1, file_index2, file_index4 = get_vc(names[0], protect0, protect1)
