@@ -37,6 +37,7 @@ from lib.audio import load_audio
 from lib.train.process_ckpt import change_info, extract_small_model, merge, show_info
 from vc_infer_pipeline import VC
 from sklearn.cluster import MiniBatchKMeans
+from tools.upload import uploadResultAudio
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 
@@ -179,10 +180,12 @@ def vc_single(
     resample_sr,
     rms_mix_rate,
     protect,
+    url,
 ):  # spk_item, input_audio0, vc_transform0,f0_file,f0method0
     global tgt_sr, net_g, vc, hubert_model, version, cpt
+    print("url parsed:%s" % url)
     if input_audio_path is None:
-        return "You need to upload an audio", None
+        return "You need to upload an audio", None, "None"
     f0_up_key = int(f0_up_key)
     try:
         audio = load_audio(input_audio_path, 16000)
@@ -234,16 +237,19 @@ def vc_single(
             if os.path.exists(file_index)
             else "Index not used."
         )
+
+        sr = resample_sr if resample_sr >= 16000 and tgt_sr != resample_sr else tgt_sr
+        uploadAudioResult = uploadResultAudio(audio_opt, sr, url)
         return "Success.\n %s\nTime:\n npy:%ss, f0:%ss, infer:%ss" % (
             index_info,
             times[0],
             times[1],
             times[2],
-        ), (resample_sr if resample_sr >= 16000 and tgt_sr != resample_sr else tgt_sr, audio_opt)
+        ), (sr, audio_opt), uploadAudioResult
     except:
         info = traceback.format_exc()
         print(info)
-        return info, (None, None)
+        return info, (None, None), "Error"
 
 
 def vc_multi(
@@ -279,7 +285,7 @@ def vc_multi(
             paths = [path.name for path in paths]
         infos = []
         for path in paths:
-            info, opt = vc_single(
+            info, opt, Res = vc_single(
                 sid,
                 path,
                 f0_up_key,
@@ -293,6 +299,7 @@ def vc_multi(
                 resample_sr,
                 rms_mix_rate,
                 protect,
+                "",
             )
             if "Success" in info:
                 try:
@@ -1556,6 +1563,8 @@ with gr.Blocks(title="RVC WebUI") as app:
                     with gr.Row():
                         vc_output1 = gr.Textbox(label=i18n("输出信息"))
                         vc_output2 = gr.Audio(label=i18n("输出音频(右下角三个点,点了可以下载)"))
+                    info = gr.Textbox(label=i18n("结果"))
+                    url =  gr.Textbox(label=i18n("URL"))
                     but0.click(
                         vc_single,
                         [
@@ -1572,8 +1581,9 @@ with gr.Blocks(title="RVC WebUI") as app:
                             resample_sr0,
                             rms_mix_rate0,
                             protect0,
+                            url,
                         ],
-                        [vc_output1, vc_output2],
+                        [vc_output1, vc_output2, info],
                         api_name="infer_convert",
                     )
             with gr.Group():
@@ -2176,6 +2186,11 @@ with gr.Blocks(title="RVC WebUI") as app:
     if config.iscolab:
         app.queue(concurrency_count=511, max_size=1022).launch(share=True)
     else:
+        print("names%s:" % names)
+        edgarPath = "EdgarPerez.pth"
+        # for mocking default selection for API reference
+        spk_item, protect0, protect1, file_index2, file_index4 = get_vc(edgarPath, protect0, protect1)
+        print(spk_item)
         app.queue(concurrency_count=511, max_size=1022).launch(
             server_name="0.0.0.0",
             inbrowser=not config.noautoopen,
@@ -2183,9 +2198,4 @@ with gr.Blocks(title="RVC WebUI") as app:
             quiet=True,
         )
 
-        # for mocking default selection for API reference
-        sleep(2)
-        spk_item, protect0, protect1, file_index2, file_index4 = get_vc(names[0], protect0, protect1)
-        print("spk_item:")
-        print(spk_item)
 
