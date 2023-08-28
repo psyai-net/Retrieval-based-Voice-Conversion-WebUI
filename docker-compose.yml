@@ -5,6 +5,13 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 0
+              capabilities: [gpu]
     container_name: rvc
     environment:
       - PORT=7801
