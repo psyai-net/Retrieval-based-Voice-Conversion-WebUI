@@ -10,7 +10,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 0
+              count: 1
               capabilities: [gpu]
     container_name: rvc
     environment:
