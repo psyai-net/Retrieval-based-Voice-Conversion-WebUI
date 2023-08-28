@@ -1,0 +1,10 @@
+FROM rvc:latest
+
+# clean cache
+RUN  apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN rm -rf /root/.cache/pip
+RUN rm -rf /.github
+RUN rm -rf /.idea
+
+
+CMD ["python3", "infer-web.py"]
