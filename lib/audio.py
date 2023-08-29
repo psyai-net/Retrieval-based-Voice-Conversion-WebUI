@@ -1,7 +1,9 @@
 import ffmpeg
 import numpy as np
+from library.general import timer_decorator
 
 
+@timer_decorator
 def load_audio(file, sr):
     try:
         # https://github.com/openai/whisper/blob/main/whisper/audio.py#L26

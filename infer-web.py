@@ -4,6 +4,8 @@ import sys
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
+library_dir = os.path.join(now_dir, "library")
+sys.path.append(library_dir)
 import traceback, pdb
 import warnings
 
@@ -183,7 +185,7 @@ def vc_single(
     url,
 ):  # spk_item, input_audio0, vc_transform0,f0_file,f0method0
     global tgt_sr, net_g, vc, hubert_model, version, cpt
-    print("url parsed:%s" % url)
+    logging.warning("Request received-url parsed:%s" % url)
     if input_audio_path is None:
         return "You need to upload an audio", None, "None"
     f0_up_key = int(f0_up_key)
@@ -211,6 +213,7 @@ def vc_single(
         # file_big_npy = (
         #     file_big_npy.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
         # )
+        resample_sr = resample_sr if resample_sr != 0 else preferred_sample_rate
         audio_opt = vc.pipeline(
             hubert_model,
             net_g,
@@ -239,6 +242,7 @@ def vc_single(
         )
 
         sr = resample_sr if resample_sr >= 16000 and tgt_sr != resample_sr else tgt_sr
+        logging.warning(f"SampleRate-sr={sr}, resample_sr={resample_sr}, tgt_sr={tgt_sr}")
         uploadAudioResult = uploadResultAudio(audio_opt, sr, url)
         return "Success.\n %s\nTime:\n npy:%ss, f0:%ss, infer:%ss" % (
             index_info,
@@ -546,10 +550,12 @@ def clean():
 
 
 sr_dict = {
+    "16k": 16000,
     "32k": 32000,
     "40k": 40000,
     "48k": 48000,
 }
+preferred_sample_rate = sr_dict["16k"]
 
 
 def if_done(done, p):
