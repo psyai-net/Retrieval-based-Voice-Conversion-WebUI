@@ -357,12 +357,14 @@ def uvr(model_name, inp_root, save_root_vocal, paths, save_root_ins, agg, format
                 device=config.device,
                 is_half=config.is_half,
             )
+        path_joined = False
         if inp_root != "":
+            path_joined = True
             paths = [os.path.join(inp_root, name) for name in os.listdir(inp_root)]
         else:
             paths = [path.name for path in paths]
         for path in paths:
-            inp_path = os.path.join(inp_root, path)
+            inp_path = os.path.join(inp_root, path) if not path_joined else path
             need_reformat = 1
             done = 0
             try:
